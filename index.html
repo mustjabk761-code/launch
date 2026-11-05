@@ -8,6 +8,7 @@
 <link rel="canonical" href="https://launch.globaltoolsbox.online/">
 <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="icon" type="image/png" href="logo.png">
+  <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#ff6154">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Product Launch Directory 2026">
@@ -1281,5 +1282,8 @@ html,body{overflow-x:hidden;max-width:100%}
   });
 })();
 </script>
+  <script>
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function () {}); }
+  </script>
 </body>
 </html>
