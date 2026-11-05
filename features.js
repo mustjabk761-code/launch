@@ -122,3 +122,40 @@
 
   if (S.loaded) render();
 })();
+
+(function () {
+  // ===== FEATURE 5: better share text =====
+  var TAIL = ' Launch your free tool too, no sign-up: ' + CFG.SITE;
+
+  // thank-you popup buttons (WhatsApp, X, Facebook, Copy link)
+  function txt() {
+    var p = S.lastP || { name: 'my product' };
+    return 'I just launched ' + p.name + ' on Product Launch Directory!';
+  }
+  function link() { return S.lastP ? pUrl(S.lastP.id) : CFG.SITE; }
+  function open(u) { window.open(u, '_blank', 'noopener'); }
+  function rebind(id, fn) {
+    var old = document.getElementById(id);
+    if (!old) return;
+    var neu = old.cloneNode(true);
+    old.parentNode.replaceChild(neu, old);
+    neu.addEventListener('click', fn);
+  }
+  rebind('shWa', function () { open('https://wa.me/?text=' + encodeURIComponent(txt() + ' ' + link() + '\n' + TAIL)); });
+  rebind('shX', function () { open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(txt() + TAIL) + '&url=' + encodeURIComponent(link())); });
+  rebind('shFb', function () { open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(link())); });
+  rebind('shCp', function () { copyText(txt() + ' ' + link() + '\n' + TAIL); });
+
+  // Share button on product cards: native share with a promo line
+  shareP = function (id) {
+    var p = findP(id);
+    if (!p) return;
+    var url = pUrl(id);
+    var text = p.name + ': ' + p.tagline + '\nDiscover more free tools on Product Launch Directory.';
+    if (navigator.share) {
+      navigator.share({ title: p.name, text: text, url: url }).catch(function () {});
+    } else {
+      copyText(text + '\n' + url);
+    }
+  };
+})();
