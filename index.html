@@ -1285,5 +1285,20 @@ html,body{overflow-x:hidden;max-width:100%}
   <script>
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function () {}); }
   </script>
+  <script>
+(function () {
+  var oldHead = detHead;
+  detHead = function (p) {
+    oldHead(p);
+    var box = document.querySelector('#detBody .acts');
+    if (!box || box.querySelector('.pg')) return;
+    var a = document.createElement('a');
+    a.className = 'btn btn-sm pg';
+    a.href = '/p/' + String(p.id).replace(/[^A-Za-z0-9_-]/g, '') + '.html';
+    a.textContent = 'Product page';
+    box.appendChild(a);
+  };
+})();
+  </script>
 </body>
 </html>
