@@ -226,14 +226,6 @@ img{max-width:100%}
 <h3>Launch your tool</h3>
 <p class="note">Free, no sign-up. Paste your website URL and we will fill in the details for you.</p>
 <button class="btn btn-pri" id="subBtn2" type="button" style="width:100%">+ Submit your product</button>
-  <div class="box">
-<h3>Pages</h3>
-<a class="mini" href="/guide.html"><b>&#128214; Launch Guide</b></a>
-<a class="mini" href="/about.html"><b>&#8505;&#65039; About Us</b></a>
-<a class="mini" href="/contact.html"><b>&#9993;&#65039; Contact Us</b></a>
-<a class="mini" href="/privacy.html"><b>&#128274; Privacy Policy</b></a>
-<a class="mini" href="/terms.html"><b>&#128220; Terms of Use</b></a>
-<a class="mini" href="/disclaimer.html"><b>&#9888;&#65039; Disclaimer</b></a>
 </div>
 </aside>
 
@@ -1244,6 +1236,50 @@ window.addEventListener('hashchange', function () {
 // ===== start =====
 initTheme();
 loadAll();
+</script>
+  <style>
+html,body{overflow-x:hidden;max-width:100%}
+.layout{grid-template-columns:minmax(0,1fr)}
+@media(min-width:900px){.layout{grid-template-columns:minmax(0,1fr) 300px}}
+.layout>*,.info,.wrap>*{min-width:0}
+.name{display:block;max-width:100%}
+#mnuOv{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.5);display:none}
+#mnuOv.show{display:block}
+#mnuP{position:absolute;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--card);color:var(--tx);padding:14px;overflow-y:auto}
+#mnuP h3{margin:4px 0 10px;font-size:16px}
+#mnuP a{display:block;padding:12px 6px;border-top:1px solid var(--bd);text-decoration:none;font-weight:600;font-size:15px}
+</style>
+<script>
+(function () {
+  var w = document.querySelector('.hdr .wrap');
+  var b = document.createElement('button');
+  b.className = 'btn ico';
+  b.type = 'button';
+  b.setAttribute('aria-label', 'Menu');
+  b.innerHTML = '&#9776;';
+  w.insertBefore(b, w.firstChild);
+  var o = document.createElement('div');
+  o.id = 'mnuOv';
+  o.innerHTML = '<nav id="mnuP"><h3>Menu</h3>' +
+    '<a href="/">&#127968; Home</a>' +
+    '<a href="/guide.html">&#128214; Launch Guide</a>' +
+    '<a href="/about.html">&#8505;&#65039; About Us</a>' +
+    '<a href="/contact.html">&#9993;&#65039; Contact Us</a>' +
+    '<a href="/privacy.html">&#128274; Privacy Policy</a>' +
+    '<a href="/terms.html">&#128220; Terms of Use</a>' +
+    '<a href="/disclaimer.html">&#9888;&#65039; Disclaimer</a></nav>';
+  document.body.appendChild(o);
+  b.addEventListener('click', function () {
+    o.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  });
+  o.addEventListener('click', function (e) {
+    if (e.target === o || e.target.tagName === 'A') {
+      o.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  });
+})();
 </script>
 </body>
 </html>
