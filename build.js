@@ -14,7 +14,7 @@ const NAV = '<nav class="top"><div><a class="b" href="/"><img src="/logo.png" al
 const FOOT = '<footer><a href="/">Home</a><a href="/all.html">All products</a><a href="/guide.html">Guide</a><a href="/about.html">About</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a><p>&copy; 2026 Product Launch Directory. A project by <a href="https://www.globaltoolsbox.online/">Global Tools Box</a>.</p></footer></body></html>';
 
 function head(title, desc, path, extra) {
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' + esc(title) + '</title><meta name="description" content="' + esc(desc) + '"><link rel="canonical" href="' + SITE + path + '"><meta name="robots" content="index,follow"><link rel="icon" type="image/png" href="/logo.png"><link rel="stylesheet" href="/page.css">' + (extra || '') + '</head><body>' + NAV;
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' + esc(title) + '</title><meta name="description" content="' + esc(desc) + '"><link rel="canonical" href="' + SITE + path + '"><meta name="robots" content="index,follow"><link rel="icon" type="image/png" href="/logo.png"><link rel="stylesheet" href="/page.css"><script async src="/track.js"></script>' + (extra || '') + '</head><body>' + NAV;
 }
 
 function productPage(p, all) {
