@@ -1,5 +1,5 @@
 const fs = require('fs');
-const API = 'https://script.google.com/macros/s/AKfycbzOk74whjsJmjo3oLQIklsYDvgc3hvrGkikR-P__hD-Rq9U23emuEfE_f7bAOlXCQtDSw/exec?action=list';
+const API = 'https://script.google.com/macros/s/AKfycbzK9E_RqCcEFKqqUZlcq49r-JO0U-dyhBEhcrHBVnKvumFoD1aQB4iq-ZiwudycP6YpDQ/exec?action=list';
 const SITE = 'https://launch.globaltoolsbox.online';
 const STATIC = ['/', '/guide.html', '/about.html', '/contact.html', '/privacy.html', '/terms.html', '/disclaimer.html', '/all.html'];
 
