@@ -17,6 +17,36 @@ function head(title, desc, path, extra) {
   return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' + esc(title) + '</title><meta name="description" content="' + esc(desc) + '"><link rel="canonical" href="' + SITE + path + '"><meta name="robots" content="index,follow"><link rel="icon" type="image/png" href="/logo.png"><link rel="stylesheet" href="/page.css"><script async src="/track.js"></script>' + (extra || '') + '</head><body>' + NAV;
 }
 
+const CAT_INFO = {
+  'AI Tools': 'AI tools use machine learning to write, design, analyze or automate tasks. Test any AI tool on a small task first, and check what data it asks you to upload.',
+  'Developer Tools': 'Developer tools help with building, testing and shipping software. Check the documentation, pricing limits and whether it fits your stack before adopting it.',
+  'Productivity': 'Productivity tools aim to save time on everyday work like notes, planning and automation. Try the free version on one real task before moving your workflow.',
+  'Marketing': 'Marketing tools help with content, SEO, outreach and analytics. Check the free limits and whether results can be exported.',
+  'Design': 'Design tools cover images, fonts, layouts and branding. Check export quality, file formats and the license for commercial use.',
+  'Finance': 'Finance tools cover calculations, budgeting and money tracking. Treat results as estimates and verify important numbers yourself.',
+  'Education': 'Education tools help with learning, teaching and practice. Check the age suitability and whether progress can be saved.'
+};
+function hash(s) { var h = 0; s = String(s); for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; } return h; }
+function tagsOf(p) { return (Array.isArray(p.tags) ? p.tags : []).map(function (t) { return String(t).toLowerCase(); }); }
+function related(p, all, n) {
+  var pt = tagsOf(p);
+  return all.filter(function (x) { return x.id !== p.id; }).map(function (x) {
+    var shared = tagsOf(x).filter(function (t) { return pt.indexOf(t) > -1; }).length;
+    return { x: x, s: (x.category === p.category ? 10 : 0) + shared * 3 + (hash(p.id + '|' + x.id) % 100) / 100 };
+  }).sort(function (a, b) { return b.s - a.s; }).slice(0, n).map(function (o) { return o.x; });
+}
+function aboutText(p, all) {
+  var same = all.filter(function (x) { return x.category === p.category; }).length;
+  var tags = (Array.isArray(p.tags) ? p.tags : []).slice(0, 4);
+  var votes = Number(p.upvotes) || 0;
+  var h = '<h2>About ' + esc(p.name) + ' on this directory</h2>';
+  h += '<p>' + esc(p.name) + ' is listed under ' + esc(p.category) + ', one of ' + same + ' tools in this category out of ' + all.length + ' products in the directory. It was listed on ' + day(p) + (votes > 0 ? ' and has ' + votes + ' upvote' + (votes > 1 ? 's' : '') + ' from visitors.' : '.') + '</p>';
+  if (tags.length) h += '<p>The maker tagged it with ' + tags.map(esc).join(', ') + ', which shows what it focuses on.</p>';
+  h += '<p>' + (CAT_INFO[p.category] || '') + '</p>';
+  h += '<h3>Before you try it</h3><ul><li>Open the official website and read its terms and privacy policy.</li><li>Do not share passwords or sensitive data with a new tool.</li><li>Compare it with the similar tools listed below.</li></ul>';
+  return h;
+}
+
 function productPage(p, all) {
   const id = safeId(p.id);
   const path = '/p/' + id + '.html';
@@ -31,8 +61,7 @@ function productPage(p, all) {
     applicationCategory: 'WebApplication',
     url: okUrl(p.website) ? p.website : SITE + path
   }).replace(/</g, '\\u003c');
-  const rel = all.filter(function (x) { return x.category === p.category && x.id !== p.id; })
-    .sort(function (a, b) { return (Number(b.upvotes) || 0) - (Number(a.upvotes) || 0); }).slice(0, 4);
+  const rel = related(p, all, 8);
   let h = head(title, desc, path, '<script type="application/ld+json">' + ld + '</script>');
   h += '<main><article>';
   if (okUrl(p.image)) h += '<img src="' + esc(p.image) + '" alt="' + esc(p.name) + ' logo" width="72" height="72" style="border-radius:14px;float:right;margin:0 0 8px 10px" onerror="this.style.display=\'none\'">';
@@ -43,8 +72,9 @@ function productPage(p, all) {
   if (okUrl(p.website)) h += '<a class="btn" href="' + esc(p.website) + '" target="_blank" rel="nofollow noopener noreferrer">Visit ' + esc(p.name) + '</a><br>';
   h += '<a href="/#p-' + esc(id) + '">Upvote and comment in the directory</a>';
   h += '<div class="box">This listing was submitted by its maker. Links are nofollow. Please read our <a href="/disclaimer.html">Disclaimer</a>.</div>';
+  h += aboutText(p, all);
   if (rel.length) {
-    h += '<h2>More in ' + esc(p.category) + '</h2><ul>';
+    h += '<h2>Similar tools</h2><ul>';
     rel.forEach(function (x) { h += '<li><a href="/p/' + safeId(x.id) + '.html">' + esc(x.name) + '</a> - ' + esc(cut(x.tagline, 90)) + '</li>'; });
     h += '</ul>';
   }
