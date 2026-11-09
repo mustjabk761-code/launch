@@ -81,6 +81,14 @@ function productPage(p, all) {
   h += '</article></main>' + FOOT;
   return h;
 }
+function homeList(all) {
+  var latest = all.slice().sort(function (a, b) { return day(b).localeCompare(day(a)); }).slice(0, 30);
+  var h = '';
+  latest.forEach(function (p) {
+    h += '<div class="row"><div class="info"><a class="name" href="/p/' + safeId(p.id) + '.html">' + esc(p.name) + '</a><div class="tagline">' + esc(cut(p.tagline, 110)) + '</div></div></div>';
+  });
+  return h;
+}
 
 function allPage(all) {
   let h = head('All Products | Launch Directory', 'Browse the full list of free web tools launched on Product Launch Directory, grouped by category: AI Tools, Developer Tools, Productivity, Marketing, Design, Finance and Education.', '/all.html');
@@ -104,6 +112,12 @@ async function main() {
   fs.mkdirSync('p', { recursive: true });
   all.forEach(function (p) { fs.writeFileSync('p/' + safeId(p.id) + '.html', productPage(p, all)); });
   fs.writeFileSync('all.html', allPage(all));
+    const re = /<!--STATIC_LIST-->[\s\S]*?<!--\/STATIC_LIST-->/;
+  let idx = fs.readFileSync('index.html', 'utf8');
+  if (re.test(idx)) {
+    idx = idx.replace(re, function () { return '<!--STATIC_LIST-->' + homeList(all) + '<!--/STATIC_LIST-->'; });
+    fs.writeFileSync('index.html', idx);
+  }
   const today = new Date().toISOString().slice(0, 10);
   let sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
   STATIC.forEach(function (u) { sm += '<url><loc>' + SITE + u + '</loc><lastmod>' + today + '</lastmod></url>\n'; });
