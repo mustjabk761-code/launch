@@ -39,7 +39,7 @@
         try {
           var d = f.contentDocument;
           var hh = d.documentElement.scrollHeight;
-          if (hh > 60) { f.style.height = (hh + 4) + 'px'; el.classList.add('show'); }
+          if (hh > 20) { f.style.height = (hh + 4) + 'px'; el.classList.add('show'); }
         } catch (e) {}
         if (n > 14) { clearInterval(iv); }
       }, 700);
