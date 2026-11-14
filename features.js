@@ -159,3 +159,21 @@
     }
   };
 })();
+(function () {
+  var box = document.getElementById('mDone');
+  if (!box) return;
+  var mb = box.querySelector('.mbox');
+  var p = document.createElement('p');
+  p.className = 'note';
+  p.id = 'doneTip';
+  p.style.marginTop = '12px';
+  mb.appendChild(p);
+  var old = openM;
+  openM = function (id) {
+    if (id === 'mDone' && S.lastP) {
+      var url = CFG.SITE + 'p/' + String(S.lastP.id).replace(/[^A-Za-z0-9_-]/g, '') + '.html';
+      p.innerHTML = 'Proud of your launch? Share your listing page on your website, blog or social media: <br><b>' + esc(url) + '</b>';
+    }
+    return old(id);
+  };
+})();
