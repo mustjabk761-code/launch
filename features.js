@@ -177,3 +177,29 @@
     return old(id);
   };
 })();
+(function () {
+  var side = document.querySelector('.side');
+  if (!side) return;
+  var b = document.createElement('div');
+  b.className = 'box';
+  b.innerHTML = '<h3>\u2709\uFE0F Weekly top tools</h3>' +
+    '<p class="note">One email a week with the best new free tools. Unsubscribe anytime.</p>' +
+    '<div class="fld"><input id="nlE" type="email" placeholder="you@example.com"></div>' +
+    '<input class="hp" id="nlH" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+    '<div class="note" id="nlM"></div>' +
+    '<button class="btn btn-pri" id="nlB" type="button" style="width:100%">Subscribe</button>';
+  side.appendChild(b);
+  document.getElementById('nlB').addEventListener('click', function () {
+    var em = document.getElementById('nlE').value.trim();
+    var btn = this;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { setNote('nlM', 'Please enter a valid email.', 'err'); return; }
+    btn.disabled = true;
+    setNote('nlM', 'Subscribing...');
+    apiPost(CFG.MAIN_API, { action: 'subscribe', email: em, hp: document.getElementById('nlH').value }).then(function (r) {
+      if (!r || !r.ok) throw new Error((r && r.error) || 'Could not subscribe.');
+      document.getElementById('nlE').value = '';
+      setNote('nlM', 'Subscribed! Check your inbox.', 'ok');
+    }).catch(function (e) { setNote('nlM', errMsg(e), 'err'); })
+      .then(function () { btn.disabled = false; });
+  });
+})();
