@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unsubscribe | Product Launch Directory</title>
+<meta name="description" content="Unsubscribe from the Product Launch Directory weekly email with one click.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="page.css">
+</head>
+<body>
+<main><article>
+<h1>Unsubscribe</h1>
+<p id="m">Please wait...</p>
+<a class="btn" href="/">Back to the directory</a>
+</article></main>
+<script>
+(function () {
+  var t = new URLSearchParams(location.search).get('t') || '';
+  var m = document.getElementById('m');
+  if (!t) { m.textContent = 'This link is not valid.'; return; }
+  fetch('https://script.google.com/macros/s/AKfycbzK9E_RqCcEFKqqUZlcq49r-JO0U-dyhBEhcrHBVnKvumFoD1aQB4iq-ZiwudycP6YpDQ/exec?action=unsub&t=' + encodeURIComponent(t), { redirect: 'follow' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) { m.textContent = j && j.ok ? 'You have been unsubscribed. You will not get more emails.' : 'This link is not valid.'; })
+    .catch(function () { m.textContent = 'Network problem. Please try again.'; });
+})();
+</script>
+</body>
+</html>
