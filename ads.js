@@ -72,6 +72,7 @@
     if (!list) return;
     var rows = Array.prototype.slice.call(list.querySelectorAll('.row'));
     if (!rows.length) return;
+        if (rows.length > NATIVE_AFTER) { rows[NATIVE_AFTER - 1].insertAdjacentElement('afterend', mk('n')); }
     var b = 0;
     for (var i = BIG_EVERY - 1; i < rows.length - 1 && b < BIG_MAX; i += BIG_EVERY) {
       b++;
