@@ -1,7 +1,6 @@
 (function () {
   var URL = 'https://productnest.online';
-  var SRC = 'https://bauval.org/21/c6d7f39358f4fa4892d5bac85e48ce99';
-  var CID = 'container-c6d7f39358f4fa4892d5bac85e48ce99';
+  var KEY = '3daa1214cf85568f02584f17bb088a59';
   var shown = false;
   var loaded = false;
 
@@ -21,14 +20,14 @@
     if (loaded) return;
     loaded = true;
     var box = document.getElementById('promoAd');
-    var c = document.createElement('div');
-    c.id = CID;
-    box.appendChild(c);
-    var s = document.createElement('script');
-    s.async = true;
-    s.setAttribute('data-cfasync', 'false');
-    s.src = SRC;
-    box.appendChild(s);
+    var f = document.createElement('iframe');
+    f.width = 300;
+    f.height = 250;
+    f.setAttribute('scrolling', 'no');
+    f.setAttribute('title', 'Advertisement');
+    f.style.cssText = 'border:0;display:block;margin:0 auto;max-width:100%';
+    f.srcdoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><base target="_blank"></head><body style="margin:0"><script>atOptions={"key":"' + KEY + '","format":"iframe","height":250,"width":300,"params":{}};<\/script><script src="https://bauval.org/22/' + KEY + '"><\/script></body></html>';
+    box.appendChild(f);
   }
 
   var oldClose = closeM;
