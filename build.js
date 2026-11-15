@@ -71,6 +71,7 @@ function productPage(p, all) {
   h += '<p>' + esc(p.description) + '</p>';
   if (okUrl(p.website)) h += '<a class="btn" href="' + esc(p.website) + '" target="_blank" rel="nofollow noopener noreferrer">Visit ' + esc(p.name) + '</a><br>';
   h += '<a href="/#p-' + esc(id) + '">Upvote and comment in the directory</a>';
+    h += '<p class="mut">Listing pages refresh every few hours after a maker edits a product. Questions? <a href="/contact.html">Contact us</a>.</p>';
   h += '<div class="box">This listing was submitted by its maker. Links are nofollow. Please read our <a href="/disclaimer.html">Disclaimer</a>.</div>';
   h += aboutText(p, all);
   if (rel.length) {
