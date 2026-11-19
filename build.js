@@ -1,7 +1,7 @@
 const fs = require('fs');
 const API = 'https://script.google.com/macros/s/AKfycbzK9E_RqCcEFKqqUZlcq49r-JO0U-dyhBEhcrHBVnKvumFoD1aQB4iq-ZiwudycP6YpDQ/exec?action=list';
 const SITE = 'https://launch.globaltoolsbox.online';
-const STATIC = ['/', '/guide.html', '/about.html', '/contact.html', '/privacy.html', '/terms.html', '/disclaimer.html', '/all.html'];
+const STATIC = ['/', '/guide.html', '/about.html', '/contact.html', '/privacy.html', '/terms.html', '/disclaimer.html', '/all.html', '/best-free-no-signup-tools.html'];
 
 // ===== INDEXING CONFIG =====
 const MIN_UP = 10;          // kam se kam itne upvotes
