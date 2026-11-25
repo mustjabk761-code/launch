@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Community post | Launch Directory</title>
+<style>
+:root{--bg:#fff;--tx:#1a1a1a;--mut:#6b7280;--bd:#e5e7eb;--pri:#e5483c;--card:#f7f7f8}
+@media(prefers-color-scheme:dark){:root{--bg:#16181c;--tx:#eceff1;--mut:#9aa3ad;--bd:#2c3036;--card:#1e2126}}
+html,body{margin:0;padding:0;background:transparent}
+body{font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--tx)}
+#w{box-sizing:border-box;background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:12px}
+.hd{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.fav{width:38px;height:38px;border-radius:50%;object-fit:cover;background:var(--pri);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 38px}
+.nm{font-weight:700}.mu{color:var(--mut);font-size:12px}
+.ti{font-weight:700;font-size:15px;margin:4px 0 2px}
+.tx{white-space:pre-wrap;word-break:break-word}
+.tx a,.ft a{color:var(--pri)}
+.im{display:block;max-width:100%;border-radius:10px;margin-top:8px;border:1px solid var(--bd)}
+.rp{border:1px solid var(--bd);border-radius:10px;padding:8px;margin-top:6px}
+.st{display:flex;gap:16px;color:var(--mut);font-size:13px;margin-top:10px}
+.ft{margin-top:10px;padding-top:8px;border-top:1px solid var(--bd);font-size:12px;color:var(--mut)}
+.msg{color:var(--mut);text-align:center;padding:16px 0}
+</style></head><body>
+<div id="w"><div class="msg">Loading...</div></div>
+<script>
+(function () {
+  var API = 'https://script.google.com/macros/s/AKfycbxLtGXBecFvROe5dDKpJMPRSaOeWmtAQxdDdNux7Y0n0R6gOmi6KEeIPAP-mp-A48Q/exec';
+  var SITE = 'https://launch.globaltoolsbox.online/';
+  var w = document.getElementById('w');
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+  function lk(t) {
+    return esc(t).replace(/(https?:\/\/[^\s<]+)/g, function (u) {
+      return '<a href="' + u + '" target="_blank" rel="nofollow ugc noopener noreferrer">' + u + '</a>';
+    });
+  }
+  function ago(iso) {
+    var d = (Date.now() - Date.parse(iso)) / 1000;
+    if (isNaN(d)) return '';
+    if (d < 60) return 'just now';
+    if (d < 3600) return Math.floor(d / 60) + ' min ago';
+    if (d < 86400) return Math.floor(d / 3600) + ' h ago';
+    if (d < 2592000) return Math.floor(d / 86400) + ' d ago';
+    return String(iso).slice(0, 10);
+  }
+  function handle(n) { return '@' + (String(n || '').toLowerCase().replace(/[^a-z0-9]/g, '') || 'user'); }
+  function av(name, url) {
+    if (url) return '<img class="fav" src="' + esc(url) + '" alt="">';
+    return '<span class="fav">' + esc(String(name || '?').charAt(0).toUpperCase()) + '</span>';
+  }
+  function sendH() {
+    var h = Math.ceil(w.getBoundingClientRect().height) + 2;
+    try { parent.postMessage({ type: 'setHeight', height: h }, '*'); } catch (e) {}
+  }
+  function show(html) {
+    w.innerHTML = html;
+    var imgs = w.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+      (function (im) {
+        im.onload = sendH;
+        im.onerror = function () {
+          if (im.className === 'fav') {
+            var sp = document.createElement('span');
+            sp.className = 'fav';
+            sp.textContent = '?';
+            im.parentNode.replaceChild(sp, im);
+          } else { im.style.display = 'none'; }
+          sendH();
+        };
+      })(imgs[i]);
+    }
+    sendH();
+  }
+  function render(p) {
+    var h = '<div class="hd">' + av(p.name, p.avatar) + '<div><div class="nm">' + esc(p.name) + '</div><div class="mu">' + esc(handle(p.name)) + ' \u00B7 ' + esc(ago(p.created)) + '</div></div></div>';
+    if (p.repostOf) {
+      h += '<div class="mu">\u21BB Reposted</div><div class="rp"><b>' + esc(p.repostOf.name) + '</b>' +
+        (p.repostOf.title ? '<div class="ti">' + esc(p.repostOf.title) + '</div>' : '') +
+        '<div class="tx">' + lk(p.repostOf.text) + '</div>' +
+        (p.repostOf.image ? '<img class="im" src="' + esc(p.repostOf.image) + '" alt="">' : '') + '</div>';
+    } else {
+      if (p.title) h += '<div class="ti">' + esc(p.title) + '</div>';
+      h += '<div class="tx">' + lk(p.text) + '</div>';
+      if (p.image) h += '<img class="im" src="' + esc(p.image) + '" alt="">';
+    }
+    h += '<div class="st"><span>\uD83D\uDCAC ' + (p.comments || 0) + '</span><span>\u21BB ' + (p.reposts || 0) + '</span><span>\u25B2 ' + (p.likes || 0) + '</span></div>';
+    h += '<div class="ft"><a href="' + SITE + '" target="_blank" rel="noopener">View on Launch Directory</a></div>';
+    show(h);
+  }
+  var id = new URLSearchParams(location.search).get('id') || '';
+  if (!/^[A-Za-z0-9_-]{4,40}$/.test(id)) { show('<div class="msg">This post is not available.</div>'); return; }
+  fetch(API + '?action=post&id=' + encodeURIComponent(id), { redirect: 'follow' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      if (!j || !j.ok || !j.post) { show('<div class="msg">This post is no longer available.</div>'); return; }
+      render(j.post);
+    })
+    .catch(function () { show('<div class="msg">Could not load this post.</div>'); });
+  window.addEventListener('resize', sendH);
+})();
+</script>
+</body></html>
