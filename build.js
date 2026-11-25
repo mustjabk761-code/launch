@@ -1,6 +1,11 @@
 const fs = require('fs');
 const API = 'https://script.google.com/macros/s/AKfycbzK9E_RqCcEFKqqUZlcq49r-JO0U-dyhBEhcrHBVnKvumFoD1aQB4iq-ZiwudycP6YpDQ/exec?action=list';
 const SITE = 'https://launch.globaltoolsbox.online';
+const FEED_API = 'https://script.google.com/macros/s/AKfycbxLtGXBecFvROe5dDKpJMPRSaOeWmtAQxdDdNux7Y0n0R6gOmi6KEeIPAP-mp-A48Q/exec?action=export';
+const FEED_MIN_LEN = 150;
+const FEED_MIN_LIKES = 2;
+const FEED_MIN_COMMENTS = 1;
+const FEED_BLOCKLIST = [];
 const STATIC = ['/', '/guide.html', '/about.html', '/contact.html', '/privacy.html', '/terms.html', '/disclaimer.html', '/all.html', '/best-free-no-signup-tools.html', '/how-to-get-first-100-users.html'];
 
 // ===== INDEXING CONFIG =====
@@ -114,6 +119,67 @@ function productPage(p, all) {
   return h;
 }
 
+function hasLink(t) {
+  t = String(t || '');
+  return /(https?:|ftp:|www\.|:\/\/)/i.test(t) ||
+    /[a-z0-9\-]\.(com|net|org|io|co|app|dev|xyz|info|biz|online|site|store|shop|link|ly|gg|tv|ai|pk|top|club|live|tk|ml|ga|cf|gq|me|in|us|uk|ru|cn|cc|ws|vip|pro|tech|page|click|win|bid)(\b|\/)/i.test(t) ||
+    /\bdot\s{0,2}(com|net|org|io|co|app|dev|xyz|info)\b/i.test(t) ||
+    /dotcom/i.test(t);
+}
+function feedQuality(p) {
+  const id = safeId(p.id);
+  if (!id || FEED_BLOCKLIST.indexOf(id) > -1) return false;
+  const text = String(p.text || '').trim();
+  const title = String(p.title || '').trim();
+  if (text.length < FEED_MIN_LEN) return false;
+  if (hasLink(title + ' ' + text)) return false;
+  if ((Number(p.reports) || 0) > 0) return false;
+  if ((Number(p.likes) || 0) < FEED_MIN_LIKES && (Number(p.comments) || 0) < FEED_MIN_COMMENTS) return false;
+  return true;
+}
+function feedH1(p) {
+  const t = String(p.title || '').replace(/\s+/g, ' ').trim();
+  return t || cut(p.text, 70);
+}
+function feedPage(p) {
+  const id = safeId(p.id);
+  const path = '/feed/' + id + '.html';
+  const text = String(p.text || '').trim();
+  const h1 = feedH1(p);
+  const title = cut(h1, 58) + ' | Community Feed';
+  const desc = cut(text, 155);
+  const date = day(p);
+  const likes = Number(p.likes) || 0;
+  const cms = Number(p.comments) || 0;
+  const ld = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'DiscussionForumPosting',
+    headline: cut(h1, 110),
+    articleBody: cut(text, 300),
+    author: { '@type': 'Person', name: String(p.name || 'Maker') },
+    datePublished: date,
+    url: SITE + path
+  }).replace(/</g, '\\u003c');
+  let h = head(title, desc, path, '<script type="application/ld+json">' + ld + '</script>', 'index,follow');
+  h += '<main><article><h1>' + esc(h1) + '</h1>';
+  h += '<p class="mut">Posted by ' + esc(p.name || 'Maker') + ' on ' + date + ' | ' + likes + ' upvote' + (likes === 1 ? '' : 's') + ' | ' + cms + ' comment' + (cms === 1 ? '' : 's') + '</p>';
+  text.split(/\n{2,}/).forEach(function (para) {
+    para = para.trim();
+    if (para) h += '<p>' + esc(para).replace(/\n/g, '<br>') + '</p>';
+  });
+  if (/^https:\/\/lh3\.googleusercontent\.com\/d\//.test(String(p.image || ''))) {
+    h += '<p><img src="' + esc(p.image) + '" alt="' + esc(cut(h1, 80)) + '" loading="lazy" style="max-width:100%;border-radius:12px"></p>';
+  }
+  const list = Array.isArray(p.list) ? p.list : [];
+  if (list.length) {
+    h += '<h2>Comments</h2><ul>';
+    list.forEach(function (c) { h += '<li><b>' + esc(c.name) + '</b>: ' + esc(cut(c.text, 300)) + '</li>'; });
+    h += '</ul>';
+  }
+  h += '<div class="box">This is a community post written by a visitor. Please read our <a href="/disclaimer.html">Disclaimer</a>. <a href="/">Back to the directory</a>.</div>';
+  h += '</article></main>' + FOOT;
+  return h;
+}
 function topList(all) {
   return all.filter(indexable).sort(function (a, b) {
     return (Number(b.upvotes) || 0) - (Number(a.upvotes) || 0);
@@ -133,7 +199,7 @@ function homeList(all) {
   return h;
 }
 
-function allPage(all) {
+function allPage(all, feedQ) {
   let h = head('All Products | Launch Directory', 'Browse the full list of free web tools launched on Product Launch Directory, grouped by category: AI Tools, Developer Tools, Productivity, Marketing, Design, Finance and Education.', '/all.html', '', 'index,follow');
   h += '<main><article><h1>All Products</h1><p class="mut">' + all.length + ' free tools, grouped by category.</p>';
   const top = topList(all);
@@ -149,6 +215,11 @@ function allPage(all) {
     cats[c].forEach(function (p) { h += '<li><a href="/p/' + safeId(p.id) + '.html">' + esc(p.name) + '</a> - ' + esc(cut(p.tagline, 90)) + '</li>'; });
     h += '</ul>';
   });
+    if (feedQ && feedQ.length) {
+    h += '<h2>Community posts</h2><ul>';
+    feedQ.slice(0, 50).forEach(function (p) { h += '<li><a href="/feed/' + safeId(p.id) + '.html">' + esc(cut(feedH1(p), 90)) + '</a> - by ' + esc(p.name || 'Maker') + '</li>'; });
+    h += '</ul>';
+    }
   return h + '</article></main>' + FOOT;
 }
 
@@ -161,7 +232,26 @@ async function main() {
   fs.rmSync('p', { recursive: true, force: true });
   fs.mkdirSync('p', { recursive: true });
   all.forEach(function (p) { fs.writeFileSync('p/' + safeId(p.id) + '.html', productPage(p, all)); });
-  fs.writeFileSync('all.html', allPage(all));
+    let feedQ = [];
+  let feedMap = null;
+  try {
+    const fr = await fetch(FEED_API, { redirect: 'follow', signal: AbortSignal.timeout(60000) });
+    const fj = await fr.json();
+    if (!fj || !fj.ok || !Array.isArray(fj.posts)) throw new Error('Bad feed list');
+    feedQ = fj.posts.filter(feedQuality).sort(function (a, b) { return String(b.created).localeCompare(String(a.created)); });
+    fs.rmSync('feed', { recursive: true, force: true });
+    fs.mkdirSync('feed', { recursive: true });
+    feedQ.forEach(function (p) { fs.writeFileSync('feed/' + safeId(p.id) + '.html', feedPage(p)); });
+    feedMap = feedQ.map(function (p) { return { id: safeId(p.id), date: day(p) }; });
+    console.log('Feed: ' + fj.posts.length + ' posts received, ' + feedQ.length + ' quality pages built.');
+  } catch (e) {
+    console.log('Feed skipped: ' + e.message + ' (old /feed pages kept)');
+  }
+  if (!feedMap) {
+    const today0 = new Date().toISOString().slice(0, 10);
+    feedMap = fs.existsSync('feed') ? fs.readdirSync('feed').filter(function (f) { return /\.html$/.test(f); }).map(function (f) { return { id: f.replace(/\.html$/, ''), date: today0 }; }) : [];
+  }
+  fs.writeFileSync('all.html', allPage(all, feedQ));
 
   const re = /<!--STATIC_LIST-->[\s\S]*?<!--\/STATIC_LIST-->/;
   let idx = fs.readFileSync('index.html', 'utf8');
@@ -176,6 +266,7 @@ async function main() {
   let sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
   STATIC.forEach(function (u) { sm += '<url><loc>' + SITE + u + '</loc><lastmod>' + today + '</lastmod></url>\n'; });
   indexed.forEach(function (p) { sm += '<url><loc>' + SITE + '/p/' + safeId(p.id) + '.html</loc><lastmod>' + day(p) + '</lastmod></url>\n'; });
+    feedMap.forEach(function (f) { sm += '<url><loc>' + SITE + '/feed/' + f.id + '.html</loc><lastmod>' + f.date + '</lastmod></url>\n'; });
   sm += '</urlset>\n';
   fs.writeFileSync('sitemap.xml', sm);
 
