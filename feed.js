@@ -99,7 +99,14 @@
     '.fCmT{word-break:break-word;font-size:14px;margin-top:1px}',
     '.fComp input[type=text],.fComp textarea,.fPf input[type=text]{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit;margin-bottom:6px}',
     '.fComp textarea{min-height:84px;resize:vertical}.fCom textarea{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit;min-height:56px;margin-bottom:6px}',
-    '.fPf{padding:16px 14px;border-bottom:1px solid var(--bd)}'
+        '.fPf{padding:16px 14px;border-bottom:1px solid var(--bd)}',
+    '.fLnk{font-size:20px;line-height:1;padding:2px 8px}',
+    '#fSheet{position:fixed;top:0;right:0;bottom:0;left:0;z-index:99}',
+    '#fSheet .shBg{position:absolute;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.45)}',
+    '#fSheet .shBox{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border:1px solid var(--bd);border-radius:16px 16px 0 0;padding:10px 12px 18px;max-width:680px;margin:0 auto}',
+    '#fSheet .shBox button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--bd);color:var(--tx);font:inherit;font-size:16px;padding:14px 6px;cursor:pointer}',
+    '#fSheet .shBox button:last-child{border-bottom:0;color:var(--mut)}',
+    '#fSheet textarea{width:100%;box-sizing:border-box;height:160px;font:12px/1.4 monospace;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:8px;margin-bottom:6px}'
   ].join('');
   document.head.appendChild(st);
 
@@ -246,7 +253,7 @@
     var id = esc(p.id), mine = isMine(p);
     var h = '<div class="fPost" data-id="' + id + '"><div class="fRow">' + av(p.name, p.avatar, 40) + '<div class="fCol">';
     h += '<div class="fHd"><span class="fName">' + esc(p.name) + '</span><span class="fMut">' + esc(handle(p.name)) + ' \u00B7 ' + esc(ago(p.created)) + '</span>' +
-      (mine ? '<button class="fLnk" type="button" data-f="dl" data-id="' + id + '">Delete</button>' : '') + '</div>';
+            '<button class="fLnk" type="button" data-f="mn" data-id="' + id + '" aria-label="More">\u22EE</button></div>';
     if (p.repostOf) {
       h += '<div class="fMut" style="margin:2px 0">\u21BB Reposted</div><div class="fRep"><b>' + esc(p.repostOf.name) + '</b>' +
         (p.repostOf.title ? '<div class="fTitle">' + esc(p.repostOf.title) + '</div>' : '') +
@@ -261,7 +268,7 @@
       '<button class="fb" type="button" data-f="cm" data-id="' + id + '">\uD83D\uDCAC ' + (p.comments || 0) + '</button>' +
       '<button class="fb" type="button" data-f="rp" data-id="' + id + '">\u21BB ' + (p.reposts || 0) + '</button>' +
       '<button class="fb' + (LIKED[p.id] ? ' on' : '') + '" type="button" data-f="lk" data-id="' + id + '">\u25B2 ' + (p.likes || 0) + '</button>' +
-      (mine ? '' : '<button class="fb fRt" type="button" data-f="rt" data-id="' + id + '">Report</button>') + '</div>';
+            '</div>';
     if (ST.open[p.id]) {
       var list = ST.cms[p.id];
       h += '<div class="fCom">';
@@ -307,12 +314,67 @@
     for (var i = 0; i < ST.posts.length; i++) { if (ST.posts[i].id === id) return ST.posts[i]; }
     return null;
   }
+    var LINK = 'https://launch.globaltoolsbox.online/embed.html?id=';
+  function copyTo(txt, msg) {
+    function fb() {
+      var t = document.createElement('textarea');
+      t.value = txt; t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); toast(msg); } catch (x) { toast('Copy failed. Please copy it manually.'); }
+      document.body.removeChild(t);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function () { toast(msg); }, fb);
+    else fb();
+  }
+  function closeSheet() {
+    var s = document.getElementById('fSheet');
+    if (s && s.parentNode) s.parentNode.removeChild(s);
+  }
+  function openMenu(p) {
+    closeSheet();
+    var id = esc(p.id), mine = isMine(p);
+    var d = document.createElement('div');
+    d.id = 'fSheet';
+    d.innerHTML = '<div class="shBg" data-f="xs" data-id="' + id + '"></div><div class="shBox">' +
+      '<button type="button" data-f="cp" data-id="' + id + '">\uD83D\uDD17 Copy link</button>' +
+      '<button type="button" data-f="em" data-id="' + id + '">&lt;/&gt; Embed code</button>' +
+      (mine ? '<button type="button" data-f="dl" data-id="' + id + '">\uD83D\uDDD1 Delete</button>' : '<button type="button" data-f="rt" data-id="' + id + '">\u2691 Report</button>') +
+      '<button type="button" data-f="xs" data-id="' + id + '">Cancel</button></div>';
+    ov.appendChild(d);
+  }
+  function openEmbed(p) {
+    var fid = 'gtb-post-' + p.id;
+    var snip = '<iframe id="' + fid + '" src="' + LINK + p.id + '" width="350" frameborder="0" allowfullscreen></iframe>\n' +
+      '<script>\n' +
+      'window.addEventListener("message", function (event) {\n' +
+      '  if (event.data && event.data.type === "setHeight") {\n' +
+      '    var f = document.getElementById("' + fid + '");\n' +
+      '    if (f && event.source === f.contentWindow) { f.style.height = event.data.height + "px"; }\n' +
+      '  }\n' +
+      '});\n' +
+      '<\/script>';
+    var d = document.createElement('div');
+    d.id = 'fSheet';
+    d.innerHTML = '<div class="shBg" data-f="xs" data-id="' + esc(p.id) + '"></div><div class="shBox">' +
+      '<div class="fMut" style="margin-bottom:6px">Paste this code into the HTML of your website.</div>' +
+      '<textarea id="fEmT" readonly></textarea>' +
+      '<button type="button" data-f="ec" data-id="' + esc(p.id) + '">\uD83D\uDCCB Copy embed code</button>' +
+      '<button type="button" data-f="xs" data-id="' + esc(p.id) + '">Close</button></div>';
+    ov.appendChild(d);
+    document.getElementById('fEmT').value = snip;
+  }
   ov.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('[data-f]') : null;
     if (!b) return;
     var f = b.getAttribute('data-f'), id = b.getAttribute('data-id'), p = findPost(id);
     if (!p) return;
     if (f === 'rm') { e.preventDefault(); ST.full[id] = 1; ST.full[id + 'r'] = 1; drawList(); return; }
+        if (f === 'mn') { openMenu(p); return; }
+    if (f === 'xs') { closeSheet(); return; }
+    if (f === 'ec') { var ta = document.getElementById('fEmT'); if (ta) copyTo(ta.value, 'Embed code copied.'); return; }
+    if (f === 'cp' || f === 'em' || f === 'rt' || f === 'dl') closeSheet();
+    if (f === 'cp') { copyTo(LINK + p.id, 'Link copied.'); return; }
+    if (f === 'em') { openEmbed(p); return; }
     if (!PROF && f !== 'cm') { toast('Create your profile first.'); ov.scrollTop = 0; return; }
     if (f === 'cm') {
       ST.open[id] = !ST.open[id];
